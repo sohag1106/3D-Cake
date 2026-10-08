@@ -1,0 +1,1785 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ATELIER CRÈME — design system
+   A pâtisserie atelier: deep charcoal, candlelight gold, fine serif type.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #0e0b12;
+  --bg-2: #15111c;
+  --panel: rgba(23, 18, 30, 0.74);
+  --panel-solid: #1a151f;
+  --panel-2: rgba(34, 27, 42, 0.62);
+  --line: rgba(255, 255, 255, 0.075);
+  --line-2: rgba(255, 255, 255, 0.14);
+  --text: #f4efe9;
+  --text-2: rgba(244, 239, 233, 0.62);
+  --text-3: rgba(244, 239, 233, 0.38);
+  --gold: #c9a24b;
+  --gold-2: #e8c56a;
+  --gold-3: #8a6a2a;
+  --rose: #e5a9b6;
+  --danger: #e0705f;
+  --radius: 16px;
+  --radius-s: 11px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Manrope", "Inter", system-ui, sans-serif;
+  --rail-w: 408px;
+  --shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.72);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+::selection { background: rgba(201, 162, 75, 0.42); color: #fff; }
+
+/* ── scrollbars ─────────────────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.16) transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.13);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background-color: rgba(201, 162, 75, 0.5); }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* ── app frame ──────────────────────────────────────────────────── */
+#root { height: 100%; }
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr var(--rail-w);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Newer iOS reports 100dvh as the full screen and then draws the app
+   under Safari's bottom bar, which covers the rail's Send button. The
+   smaller units subtract it; browsers that don't know them keep the
+   vh/dvh pair above. */
+@supports (height: 100svh) {
+  .app { height: 100svh; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VIEWPORT
+   ═══════════════════════════════════════════════════════════════ */
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 110%, rgba(201, 162, 75, 0.09), transparent 60%),
+    radial-gradient(80% 60% at 80% -10%, rgba(229, 169, 182, 0.07), transparent 60%),
+    var(--bg);
+}
+
+.stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+  /* `touch-action: none` already stops the browser handling a drag,
+     but iOS also runs its own text selection on a long press unless
+     told not to — and that selection halo over a 3D canvas reads as
+     a rendering glitch. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.stage canvas:active { cursor: grabbing; }
+
+/* soft vignette over the render so the UI edges melt into it */
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(115% 100% at 50% 45%, transparent 55%, rgba(8, 6, 10, 0.55) 100%);
+}
+
+/* ── brand ──────────────────────────────────────────────────────── */
+.brand {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  padding: 26px 30px;
+  pointer-events: none;
+  animation: rise 0.9s var(--ease) both;
+  /* the light stage presets (Editorial especially) wash these out —
+     the wordmark is cream on cream without a shadow */
+  text-shadow: 0 1px 12px rgba(18, 11, 22, 0.6);
+}
+.brand__mark {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.brand__glyph {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, rgba(201,162,75,0.28), rgba(201,162,75,0.05));
+  border: 1px solid rgba(201, 162, 75, 0.4);
+  color: var(--gold-2);
+  flex: none;
+}
+.brand__word {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 21px;
+  letter-spacing: 0.045em;
+  line-height: 1;
+}
+.brand__word em {
+  font-style: italic;
+  font-weight: 300;
+  background: linear-gradient(100deg, var(--gold-2), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand__sub {
+  margin-top: 5px;
+  font-size: 9.5px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 233, 0.66);
+  padding-left: 45px;
+}
+
+/* ── viewport toolbar ───────────────────────────────────────────── */
+.stage-tools {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  /* `bottom` instead of an unset `bottom: auto` would be wrong,
+     but the stack needs a hard ceiling: on a short landscape
+     phone the four buttons are taller than half the stage. */
+  max-height: calc(100% - 130px);
+  overflow-y: auto;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  animation: rise 0.9s var(--ease) 0.12s both;
+}
+.toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 13px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: var(--shadow);
+}
+.tool-btn {
+  display: grid;
+  place-items: center;
+  /* 40px: the icon is 17px, so a 34px button leaves a 8.5px
+     tap margin. Under 40px a thumb misses on a phone. */
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  position: relative;
+}
+.tool-btn:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+.tool-btn[aria-pressed="true"] {
+  color: var(--gold-2);
+  background: rgba(201, 162, 75, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 75, 0.34);
+}
+.tool-btn .tip {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: #0b090e;
+  border: 1px solid var(--line-2);
+  color: var(--text);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.18s var(--ease);
+}
+.tool-btn:hover .tip { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+/* ── stage chips (bottom of viewport) ───────────────────────────── */
+.stage-chips {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  /* The chips are the only way to reach the close-up, table and
+     overhead frames, so they have to be reachable by thumb, not
+     pinned to the desktop corner. `translate(-50%, 0)` is spelled
+     out because `rise` animates `transform` and its `to` keyframe
+     (`transform: translateY(0)`) would otherwise drop the centring
+     and slide the strip to the left edge once it lands. */
+  transform: translate(-50%, 0);
+  max-width: min(calc(100vw - 24px), calc(100% - 24px));
+  overflow-x: auto;
+  scrollbar-width: none;
+  z-index: 20;
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 99px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: var(--shadow);
+  /* Not the shared `rise`: its keyframes animate `transform` on their
+     own, so a centred element would lose the `-50%` and flash at the
+     left edge for the length of the delay. */
+  animation: riseCentered 0.9s var(--ease) 0.2s both;
+}
+.stage-chips::-webkit-scrollbar { display: none; }
+.chip {
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 8px 15px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  white-space: nowrap;
+  /* 40px min-height — a 8px-padded chip is 34px and misses
+     under a thumb. */
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.chip:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.chip[aria-pressed="true"] {
+  color: #1a1306;
+  background: linear-gradient(120deg, var(--gold-2), var(--gold));
+  box-shadow: 0 4px 16px -4px rgba(201, 162, 75, 0.6);
+}
+
+/* ── hint ───────────────────────────────────────────────────────── */
+.hint {
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11.5px;
+  color: var(--text-3);
+  letter-spacing: 0.03em;
+  animation: rise 1s var(--ease) 0.5s both;
+  transition: opacity 0.6s var(--ease);
+}
+.hint svg { color: var(--gold); opacity: 0.8; }
+.hint.gone { opacity: 0; }
+
+/* ── price bubble (bottom-right of viewport) ────────────────────── */
+.price-bubble {
+  position: absolute;
+  right: 24px;
+  bottom: 26px;
+  z-index: 20;
+  text-align: right;
+  animation: rise 0.9s var(--ease) 0.28s both;
+  pointer-events: none;
+}
+.price-bubble__label {
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 3px;
+}
+.price-bubble__value {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+  background: linear-gradient(100deg, #fdf6e3, var(--gold-2) 70%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.price-bubble__meta {
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CONTROL RAIL
+   ═══════════════════════════════════════════════════════════════ */
+
+.rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(19,15,25,0.96), rgba(13,10,17,0.99));
+  border-left: 1px solid var(--line);
+  overflow: hidden;
+  animation: railIn 0.8s var(--ease) 0.1s both;
+  /* The tab row has to fit five labels and five icons into whatever width
+     the rail has — and the rail is 356/340/390px depending on which rule
+     won, which no viewport media query can see. `inline-size` (not `size`)
+     is the containment that gives a queryable width without touching the
+     rail's own height, which is `auto` on mobile. */
+  container-type: inline-size;
+}
+
+.rail__head {
+  padding: 22px 24px 0;
+  flex: none;
+}
+.rail__eyebrow {
+  font-size: 9.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 7px;
+}
+.rail__title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.rail__title em { font-style: italic; color: var(--gold-2); font-weight: 300; }
+.rail__titlerow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rail__titlerow .rail__title { min-width: 0; }
+.rail__shuffle { flex: none; }
+.rail__tagline {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+/* ── editions strip ─────────────────────────────────────────────── */
+.editions {
+  margin-top: 18px;
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scrollbar-width: none;
+  flex: none;
+  /* 18 occasions do not fit any phone, and the scrollbar is hidden —
+     without the faded right edge the strip just looks cut off. */
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
+}
+.editions::-webkit-scrollbar { display: none; }
+.edition-chip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px 8px 10px;
+  min-height: 40px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.24s var(--ease);
+  white-space: nowrap;
+}
+.edition-chip svg { opacity: 0.75; }
+.edition-chip:hover {
+  border-color: var(--line-2);
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.edition-chip[aria-pressed="true"] {
+  border-color: rgba(201, 162, 75, 0.55);
+  background: linear-gradient(140deg, rgba(201,162,75,0.22), rgba(201,162,75,0.06));
+  color: var(--gold-2);
+  box-shadow: 0 6px 20px -8px rgba(201, 162, 75, 0.55);
+}
+
+/* ── tabs ───────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin: 6px 20px 0;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.32);
+  border: 1px solid var(--line);
+  flex: none;
+}
+.tab {
+  flex: 1;
+  /* five flex items with `min-width: auto` refuse to shrink past their
+     own text, so "DETAILS" plus its icon pushed the row 16px past the
+     rail and the last tab sat off-screen. */
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 4px;
+  /* 44px: the tab row carries the whole rail — the least
+     missable control it has. */
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.24s var(--ease);
+}
+/* Every flex item here would otherwise shrink, and because an SVG's flex
+   base is `auto` while its intrinsic width is the 14px attribute, all the
+   squeeze landed on the icon — it measured 0–9px even on a 408px rail.
+   Forcing it to its real size only moves the failure: five labels plus
+   five icons need ~398px of content in a tab row that has 367px, so the
+   labels ellipsised instead. The row never had room for both, and the
+   label is the control — the icon is decoration. */
+.tab > svg { display: none; }
+.tab__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text-2); }
+.tab[aria-selected="true"] {
+  color: var(--text);
+  background: var(--panel-2);
+  box-shadow: inset 0 0 0 1px var(--line-2), 0 2px 8px -2px rgba(0,0,0,0.5);
+}
+
+/* Below ~400px of rail the five labels stop fitting at 11.5px, and because
+   the tab is a centred flex box its content spills symmetrically —
+   "DESIGN FLAVOR FINISH" reads as one run-on string. */
+@container (max-width: 400px) {
+  .tab { font-size: 10.5px; letter-spacing: 0.03em; }
+}
+/* Narrower than this and even the small size ellipsises "TOPPERS". */
+@container (max-width: 345px) {
+  .tab { padding: 9px 1px; font-size: 10px; letter-spacing: 0; }
+  .tabs { margin-left: 10px; margin-right: 10px; gap: 1px; padding: 3px; }
+}
+
+/* ── rail body ──────────────────────────────────────────────────── */
+.rail__body {
+  flex: 1;
+  /* Without this a flex item refuses to shrink below its content, so
+     the body pushed the summary off the bottom of the rail instead of
+     scrolling inside it — the tab's controls were unreachable. */
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 22px 26px;
+  overscroll-behavior: contain;
+}
+.rail__body::-webkit-scrollbar { width: 7px; }
+
+/* ── section ────────────────────────────────────────────────────── */
+.section { margin-bottom: 26px; animation: fadeUp 0.5s var(--ease) both; }
+.section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.section__label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section__label::before {
+  content: "";
+  width: 14px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.7;
+}
+.section__value {
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.section__note {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-top: 9px;
+  line-height: 1.5;
+}
+.section__note b { color: var(--text-2); font-weight: 600; }
+
+/* ── option grids ───────────────────────────────────────────────── */
+.opt-grid {
+  display: grid;
+  gap: 8px;
+}
+.opt-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.opt-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.opt-grid--4 { grid-template-columns: repeat(4, 1fr); }
+.opt-grid--6 { grid-template-columns: repeat(6, 1fr); }
+
+/* generic option card */
+.opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 8px 11px;
+  min-height: 76px;
+  justify-content: center;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.028);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  overflow: hidden;
+}
+.opt:hover {
+  border-color: var(--line-2);
+  background: rgba(255,255,255,0.062);
+  color: var(--text);
+  transform: translateY(-2px);
+}
+.opt[aria-pressed="true"] {
+  border-color: rgba(201, 162, 75, 0.62);
+  background: linear-gradient(160deg, rgba(201,162,75,0.18), rgba(201,162,75,0.03));
+  color: var(--text);
+  box-shadow: 0 8px 24px -12px rgba(201, 162, 75, 0.65);
+}
+.opt[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 75, 0.25);
+  pointer-events: none;
+}
+.opt__icon {
+  width: 100%;
+  /* The 3D preview canvas is 96x84 intrinsic. In a fixed 40px box it
+     spilled 22px past the top and bottom and sat underneath the name
+     and the price. Let the box take the preview's own height instead
+     of the other way round. */
+  height: auto;
+  min-height: 40px;
+  display: grid;
+  place-items: center;
+  color: var(--gold-2);
+  opacity: 0.9;
+}
+.opt__icon svg { width: 30px; height: 30px; }
+.opt__icon canvas { display: block; max-width: 100%; height: auto; }
+.opt__name { font-size: 11px; line-height: 1.3; }
+.opt__price {
+  font-size: 10px;
+  color: var(--text-3);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.opt[aria-pressed="true"] .opt__price { color: var(--gold-2); }
+
+/* swatch */
+.swatch {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.16);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  box-shadow: inset 0 1px 3px rgba(255,255,255,0.25), inset 0 -2px 5px rgba(0,0,0,0.22);
+}
+.swatch:hover { transform: scale(1.14); }
+.swatch[aria-pressed="true"] {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 2px var(--bg-2), 0 0 0 4px var(--gold-2),
+              inset 0 1px 3px rgba(255,255,255,0.3);
+}
+.swatch__label {
+  position: absolute;
+  bottom: -17px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.swatch:hover .swatch__label { opacity: 1; }
+
+/* swatch grid — a tight field of colour dots */
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(26px, 1fr));
+  gap: 11px 9px;
+  padding-bottom: 16px;
+}
+.swatch-grid .swatch__label { font-size: 8.5px; }
+
+.group-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 20px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+
+/* ── size pills ─────────────────────────────────────────────────── */
+.size-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.size-card {
+  padding: 12px 8px;
+  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.028);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  font: inherit;
+  color: var(--text-2);
+}
+.size-card:hover { border-color: var(--line-2); background: rgba(255,255,255,0.06); transform: translateY(-2px); }
+.size-card[aria-pressed="true"] {
+  border-color: rgba(201,162,75,0.62);
+  background: linear-gradient(160deg, rgba(201,162,75,0.18), rgba(201,162,75,0.03));
+  color: var(--text);
+}
+.size-card__lb { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.size-card__serves { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+.size-card__price { font-size: 10.5px; font-weight: 700; color: var(--gold-2); margin-top: 5px; }
+
+/* ── tier segmented ─────────────────────────────────────────────── */
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 13px;
+  background: rgba(0,0,0,0.34);
+  border: 1px solid var(--line);
+}
+.segmented__btn {
+  padding: 10px 6px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  text-align: center;
+}
+.segmented__btn:hover { color: var(--text-2); }
+.segmented__btn[aria-pressed="true"] {
+  color: #1a1306;
+  background: linear-gradient(120deg, var(--gold-2), var(--gold));
+  box-shadow: 0 4px 14px -6px rgba(201,162,75,0.8);
+}
+.segmented__btn small { display: block; font-size: 9.5px; font-weight: 700; opacity: 0.72; margin-top: 2px; }
+
+/* ── toppings ───────────────────────────────────────────────────── */
+.topper-cats {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--line);
+}
+.topper-cats__btn {
+  flex: 1;
+  padding: 7px 4px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.topper-cats__btn:hover { color: var(--text-2); }
+.topper-cats__btn[aria-pressed="true"] {
+  color: var(--gold-2);
+  background: rgba(201,162,75,0.13);
+}
+
+.topper-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.topper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 11px;
+  min-height: 56px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.028);
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  font: inherit;
+  color: var(--text-2);
+  text-align: left;
+}
+.topper:hover { border-color: var(--line-2); background: rgba(255,255,255,0.06); transform: translateY(-2px); }
+.topper[aria-pressed="true"] {
+  border-color: rgba(201,162,75,0.62);
+  background: linear-gradient(140deg, rgba(201,162,75,0.17), rgba(201,162,75,0.03));
+  color: var(--text);
+}
+.topper__dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  background: rgba(201,162,75,0.14);
+  border: 1px solid rgba(201,162,75,0.25);
+}
+.topper[aria-pressed="true"] .topper__dot { background: rgba(201,162,75,0.3); }
+.topper__name { font-size: 11.5px; font-weight: 700; line-height: 1.25; }
+.topper__price { font-size: 10px; font-weight: 700; color: var(--text-3); margin-top: 2px; }
+.topper[aria-pressed="true"] .topper__price { color: var(--gold-2); }
+.topper__check {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(120deg, var(--gold-2), var(--gold));
+  color: #1a1306;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: all 0.24s var(--ease);
+}
+.topper[aria-pressed="true"] .topper__check { opacity: 1; transform: scale(1); }
+
+/* drip swatch glyph — a little poured edge */
+.drip-glyph {
+  width: 100%;
+  height: 26px;
+  border-radius: 6px;
+  background: currentColor;
+  opacity: 0.85;
+  position: relative;
+  overflow: hidden;
+}
+.drip-glyph::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 11px;
+  background:
+    radial-gradient(circle at 12% 0, transparent 5px, var(--bg-2) 5.5px) 0 0 / 20px 11px repeat-x,
+    radial-gradient(circle at 50% 0, transparent 4px, var(--bg-2) 4.5px) 0 0 / 16px 11px repeat-x;
+  opacity: 0.55;
+}
+.drip-glyph--none {
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 6px, transparent 6px 12px);
+  border: 1px dashed var(--line);
+  color: transparent;
+}
+.drip-glyph--none::after { display: none; }
+
+.topper-count {
+  font-size: 10.5px;
+  color: var(--text-3);
+  font-weight: 600;
+  text-align: right;
+  margin-top: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── sliders & inputs ───────────────────────────────────────────── */
+.slider-row { display: flex; align-items: center; gap: 14px; }
+.slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--gold) var(--fill, 0%), rgba(255,255,255,0.13) var(--fill, 0%));
+  outline: none;
+  cursor: pointer;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fdf6e3, var(--gold-2) 60%, var(--gold-3));
+  border: 2px solid #0e0b12;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,162,75,0.5);
+  cursor: grab;
+  transition: transform 0.16s var(--ease);
+}
+.slider::-webkit-slider-thumb:hover { transform: scale(1.14); }
+.slider::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.05); }
+.slider::-moz-range-thumb {
+  width: 19px; height: 19px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fdf6e3, var(--gold-2) 60%, var(--gold-3));
+  border: 2px solid #0e0b12;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  cursor: grab;
+}
+.slider-val {
+  min-width: 46px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-2);
+}
+
+.text-input, .textarea-input {
+  width: 100%;
+  padding: 11px 13px;
+  /* iOS zooms the page on focus below 16px — the single
+     most common mobile form bug. */
+  font-size: 16px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: rgba(0,0,0,0.32);
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s var(--ease);
+}
+.text-input:focus, .textarea-input:focus {
+  border-color: rgba(201,162,75,0.55);
+  box-shadow: 0 0 0 3px rgba(201,162,75,0.13);
+}
+.text-input::placeholder, .textarea-input::placeholder { color: var(--text-3); }
+.textarea-input { resize: none; min-height: 64px; line-height: 1.5; }
+.char-count { font-size: 10px; color: var(--text-3); text-align: right; margin-top: 5px; font-variant-numeric: tabular-nums; }
+
+input[type="date"] { color-scheme: dark; }
+
+/* ── summary / pricing ──────────────────────────────────────────── */
+.summary {
+  /* `flex: 0 1 auto` with a zero-min-height body opposite it: the body
+     is the only grower, so it takes the free space, and if the open
+     breakdown is taller than what is left, the shrink lands on the
+     summary (whose base size is the content) rather than on the body. */
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(20,15,26,0.9), rgba(14,10,18,0.98));
+  padding: 16px 20px 18px;
+}
+/* The Send button is first in the DOM so the phone can put it straight
+   under the total without a second copy of it; desktop reads
+   total → breakdown → send, which is what these orders restore. */
+.summary__head { order: 1; flex: none; }
+.summary__more {
+  order: 2;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-top: 13px;
+  /* Open, the breakdown plus six action buttons is ~600px. Uncapped it
+     took the whole rail and left the tab's own controls a sliver. */
+  max-height: min(440px, 46vh);
+}
+.summary__send { order: 3; flex: none; margin-top: 13px; }
+.summary__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+.summary__total {
+  font-family: var(--font-display);
+  font-size: 27px;
+  font-weight: 400;
+  background: linear-gradient(100deg, #fdf6e3, var(--gold-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.summary__label {
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: block;
+  margin-bottom: 1px;
+}
+/* The head is a full-width button that toggles the breakdown; the
+   chevron marks the right edge of the summary, not the left edge of
+   the Send button, so it gets its own box and an inset. */
+.summary__toggle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  margin-right: 10px;
+  border-radius: 8px;
+  color: var(--text-3);
+  transition: transform .25s var(--ease), color .2s var(--ease), background .2s var(--ease);
+}
+@media (hover: hover) {
+  .summary__head:hover .summary__toggle { color: var(--text-2); background: rgba(255,255,255,0.06); }
+}
+.summary__desc {
+  margin-top: 9px;
+  font-size: 11.5px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.summary__lines {
+  margin-top: 12px;
+  max-height: 168px;
+  overflow-y: auto;
+  border-top: 1px dashed var(--line);
+  padding-top: 10px;
+  /* a long commission has more lines than fit; without a hint the
+     cut-off list just looks broken */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+}
+.summary__lines::-webkit-scrollbar { width: 5px; }
+.summary__lines::-webkit-scrollbar-track { background: transparent; }
+.summary__lines::-webkit-scrollbar-thumb {
+  background: var(--line-2);
+  border-radius: 99px;
+}
+.summary__lines:hover::-webkit-scrollbar-thumb { background: var(--gold-2); }
+.summary__line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  padding: 3.5px 0;
+}
+.summary__line span:last-child {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.summary__line--total {
+  margin-top: 6px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+.summary__line--total span:last-child { color: var(--gold-2); font-size: 15px; }
+.summary__expedited {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--rose);
+  letter-spacing: 0.04em;
+}
+.summary__mini-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 13px;
+}
+.summary__mini-grid--2 { grid-template-columns: 1fr; }
+.summary__mini-grid > div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.025);
+}
+.summary__mini-grid b {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2px;
+}
+.summary__mini-grid small {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 800;
+}
+.summary__actions { margin-top: 13px; display: grid; gap: 8px; }
+
+/* ── buttons ────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 18px;
+  min-height: 44px;
+  border-radius: 13px;
+  border: 1px solid var(--line-2);
+  background: rgba(255,255,255,0.045);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.24s var(--ease);
+  text-decoration: none;
+}
+.btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn--primary {
+  border: 0;
+  background: linear-gradient(115deg, var(--gold-2) 0%, var(--gold) 55%, var(--gold-3) 100%);
+  color: #1c1408;
+  box-shadow: 0 10px 28px -10px rgba(201, 162, 75, 0.85), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.btn--primary:hover {
+  box-shadow: 0 14px 34px -10px rgba(201, 162, 75, 1), inset 0 1px 0 rgba(255,255,255,0.4);
+  filter: brightness(1.06);
+}
+.btn--ghost { background: transparent; border-color: var(--line); color: var(--text-2); }
+.btn--ghost:hover { color: var(--text); border-color: var(--line-2); }
+.btn--sm { padding: 9px 13px; font-size: 12px; border-radius: 10px; min-height: 40px; }
+.btn--block { width: 100%; }
+.btn--danger { color: var(--danger); border-color: rgba(224,112,95,0.3); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ── modal ──────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(7, 5, 10, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s var(--ease) both;
+  overflow-y: auto;
+}
+.modal {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 22px;
+  border: 1px solid var(--line-2);
+  background: linear-gradient(170deg, #1e1725, #130f19 60%);
+  box-shadow: 0 40px 100px -20px rgba(0,0,0,0.9);
+  overflow: hidden;
+  animation: modalIn 0.42s var(--ease) both;
+  margin: auto;
+}
+.modal__head {
+  padding: 26px 28px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+.modal__title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+.modal__title em { font-style: italic; color: var(--gold-2); }
+.modal__sub { margin-top: 6px; font-size: 12.5px; color: var(--text-2); }
+.modal__body { padding: 22px 28px 28px; }
+.modal__close {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-2);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+  flex: none;
+}
+.modal__close:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+
+.field { margin-bottom: 15px; }
+.field__label {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 7px;
+}
+.field__row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.field__hint {
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--text-3);
+  letter-spacing: 0.03em;
+}
+.field__hint[data-warn="true"] { color: var(--rose); font-weight: 700; }
+
+/* ── order receipt ──────────────────────────────────────────────── */
+.receipt {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 15px 16px 13px;
+  margin-bottom: 20px;
+  background:
+    linear-gradient(180deg, rgba(201,162,75,0.07), transparent 60%),
+    rgba(255,255,255,0.022);
+  position: relative;
+}
+.receipt::after {
+  content: '';
+  position: absolute;
+  inset: auto 12px -1px 12px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--line) 0 5px, transparent 5px 10px);
+}
+.receipt__title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--text);
+  margin-bottom: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px dashed var(--line);
+}
+.receipt__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  padding: 3px 0;
+}
+.receipt__row--wrap { flex-direction: column; gap: 2px; }
+.receipt__row--wrap span:first-child { color: var(--text-3); font-style: italic; }
+.receipt__total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+.receipt__total span:last-child {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--gold-2);
+}
+
+/* ── contact cards ──────────────────────────────────────────────── */
+.contact-grid { display: grid; gap: 9px; }
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 15px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.028);
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.2s var(--ease);
+}
+a.contact-card:hover {
+  border-color: rgba(201,162,75,0.5);
+  background: rgba(201,162,75,0.08);
+  transform: translateX(3px);
+}
+.contact-card__icon {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: var(--gold-2);
+  background: rgba(201,162,75,0.12);
+  border: 1px solid rgba(201,162,75,0.24);
+}
+.contact-card b { display: block; font-size: 12.5px; font-weight: 700; }
+.contact-card small { display: block; font-size: 10.5px; color: var(--text-3); margin-top: 2px; }
+.modal__fine {
+  margin-top: 14px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.order-done__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+}
+.order-done__sub {
+  font-size: 12px;
+  color: var(--text-2);
+  max-width: 340px;
+  margin: 8px auto 0;
+  line-height: 1.6;
+}
+.order-done__actions {
+  display: flex;
+  gap: 9px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* order confirmation */
+.order-done {
+  text-align: center;
+  padding: 12px 0 4px;
+}
+.order-done__seal {
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 35% 30%, rgba(232,197,106,0.35), rgba(201,162,75,0.1));
+  border: 1px solid rgba(201,162,75,0.55);
+  color: var(--gold-2);
+  box-shadow: 0 0 40px -6px rgba(201,162,75,0.6);
+  animation: sealPop 0.6s var(--ease) both;
+}
+.order-done__code {
+  font-family: var(--font-display);
+  font-size: 21px;
+  letter-spacing: 0.06em;
+  color: var(--gold-2);
+  margin-top: 4px;
+}
+.order-done__rows {
+  margin: 20px 0 6px;
+  text-align: left;
+  border-top: 1px dashed var(--line);
+  padding-top: 14px;
+}
+
+/* order-done seal */
+.order-done__seal {
+  width: 62px;
+  height: 62px;
+  margin: 6px auto 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--gold-2);
+  background: radial-gradient(circle at 35% 30%, rgba(232,197,106,0.3), rgba(201,162,75,0.08));
+  border: 1px solid rgba(201,162,75,0.5);
+  animation: sealPop 0.55s var(--ease) 0.1s both;
+}
+
+/* ── saved drawer ───────────────────────────────────────────────── */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  z-index: 90;
+  background: linear-gradient(200deg, #1c1521, #110d17);
+  border-left: 1px solid var(--line-2);
+  box-shadow: -30px 0 80px -20px rgba(0,0,0,0.9);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.4s var(--ease) both;
+}
+.drawer__head {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+}
+.drawer__body { flex: 1; overflow-y: auto; padding: 18px 20px 30px; }
+.saved-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 11px;
+  background: rgba(255,255,255,0.028);
+  transition: all 0.22s var(--ease);
+}
+.saved-card:hover { border-color: var(--line-2); background: rgba(255,255,255,0.055); }
+.saved-card__name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 400;
+}
+.saved-card__desc {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-top: 5px;
+  line-height: 1.5;
+}
+.saved-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 11px;
+}
+.saved-card__actions { display: flex; gap: 6px; }
+.empty {
+  text-align: center;
+  color: var(--text-3);
+  font-size: 12.5px;
+  padding: 40px 20px;
+  line-height: 1.7;
+}
+.empty svg { color: var(--gold); opacity: 0.55; margin-bottom: 12px; }
+
+/* ── intro ──────────────────────────────────────────────────────── */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(90% 80% at 50% 40%, #1c1422, #0b090f 75%);
+  animation: fadeIn 0.6s var(--ease) both;
+  text-align: center;
+  padding: 24px;
+}
+.intro__inner { max-width: 560px; animation: rise 1s var(--ease) 0.15s both; }
+.intro__foot i {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.5;
+  margin: 0 12px;
+  vertical-align: middle;
+}
+.intro--out { animation: fadeOut 0.55s var(--ease) both; }
+.intro__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 22px;
+}
+.intro__title {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 7.5vw, 74px);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.intro__title em {
+  font-style: italic;
+  font-weight: 400;
+  background: linear-gradient(100deg, #fdf6e3, var(--gold-2) 55%, var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.intro__sub {
+  margin: 22px auto 0;
+  max-width: 420px;
+  font-size: 14.5px;
+  color: var(--text-2);
+  line-height: 1.75;
+}
+.intro__cta { margin-top: 36px; display: flex; gap: 11px; justify-content: center; flex-wrap: wrap; }
+.intro__foot {
+  margin-top: 44px;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ── toast ──────────────────────────────────────────────────────── */
+.toast-stack {
+  position: fixed;
+  /* Sit above the stage chips and clear of the rail footer — at the
+     old bottom:26px the toasts landed on both. */
+  bottom: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 17px;
+  border-radius: 99px;
+  background: rgba(20, 15, 26, 0.94);
+  border: 1px solid var(--line-2);
+  box-shadow: 0 16px 40px -12px rgba(0,0,0,0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  animation: toastIn 0.36s var(--ease) both;
+  white-space: nowrap;
+  max-width: 92vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toast svg { color: var(--gold-2); flex: none; }
+.toast--warn svg { color: var(--rose); }
+
+/* ── toast ──────────────────────────────────────────────────────── */
+
+/* ── reduced motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ── responsive ─────────────────────────────────────────────────── */
+@media (max-width: 1180px) {
+  :root { --rail-w: 356px; }
+}
+
+@media (max-width: 980px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+  .rail {
+    border-left: 0;
+    border-top: 1px solid var(--line-2);
+    /* 62vh left the studio 321px of an 844px screen — barely a third
+       of the viewport for the thing the whole app is for. The rail's
+       own chrome (head, tab row, total, send) is about 250px, so at
+       46vh it had nothing left to give the tab body and the controls
+       were cut off entirely. 52vh keeps ~190px of tappable controls
+       and still leaves the stage the larger half. */
+    max-height: 52vh;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -24px 60px -20px rgba(0,0,0,0.85);
+  }
+  .rail__body { padding-bottom: 40px; }
+  /* The tagline is the first thing to go — it restates what the
+     tab row underneath already says. */
+  .rail__tagline { display: none; }
+  /* The wordmark sat in the top-left corner and the tool column in the
+     top-right, on a stage that is now only ~450px tall and holds a
+     cake that fills most of it. The brand is the first thing to go:
+     it is the site's name, not a control, and it is already the
+     document title and the intro screen. */
+  .brand { display: none; }
+  /* A 4x40px column down the right edge would cover the cake. Along
+     the top it sits on empty backdrop. */
+  .stage-tools { top: 12px; left: 12px; right: 12px; flex-direction: row; align-items: center; }
+  .toolbar { margin-left: auto; }
+  .stage-chips { bottom: 14px; }
+  /* The bubble repeats the rail's always-visible total, and on a phone
+     it sat exactly where the chip strip lands. The summary is the
+     price; the bubble is desktop's floating copy of it. */
+  .price-bubble { display: none; }
+  .hint { display: none; }
+  .field__row { grid-template-columns: 1fr; }
+  /* Toasts are viewport-fixed at the bottom — over the rail on a
+     phone. The top of the stage is clear of everything. */
+  .toast-stack { top: 82px; bottom: auto; }
+  /* Total and Send share one row rather than stacking: as two blocks
+     they cost ~150px of a rail that only has ~250px for everything
+     outside the tab body. The open breakdown still spans the full
+     width beneath them. */
+  .summary {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px 15px;
+  }
+  .summary__head { order: 0; justify-content: flex-start; }
+  /* In the two-column row the head only owns the left column, so a
+     chevron pushed to its right edge lands against the Send button
+     and reads as part of it. Tucked right after the total it reads as
+     what it is: this number expands. */
+  .summary__toggle { margin-left: 8px; margin-right: 0; }
+  .summary__more { grid-column: 1 / -1; order: 0; margin-top: 0; }
+  .summary__send {
+    order: 0;
+    width: auto;
+    /* wide enough that "Send to the atelier" stays on one line — at
+       152px it wrapped, which cost 20px of a rail that has none. */
+    max-width: 190px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    margin-top: 0;
+  }
+  .summary__lines { max-height: 132px; }
+  .summary__more { max-height: 180px; }
+  .summary__actions { margin-top: 10px; }
+}
+
+@media (max-width: 560px) {
+  .stage-tools { top: 10px; left: 10px; right: 10px; }
+  .stage-chips { bottom: 10px; padding: 4px; }
+  /* At 360px the five chips measure 367px and had to be swiped to
+     reach Editorial. Tighter padding and type fit them all. */
+  .chip { font-size: 10.5px; padding: 7px 8px; letter-spacing: 0; }
+  .rail__head { padding: 16px 16px 0; }
+  .rail__title { font-size: 21px; }
+  .editions { margin-top: 12px; }
+  .tabs { margin: 6px 12px 0; padding: 3px; }
+  .rail__body { padding: 14px 16px 28px; }
+  .summary { padding: 11px 16px 13px; gap: 8px; }
+  .summary__total { font-size: 23px; }
+  .summary__send { font-size: 12px; padding: 10px 12px; max-width: 168px; white-space: nowrap; }
+  .summary__desc { font-size: 10.5px; }
+  .summary__mini-grid { gap: 6px; }
+  .opt-grid--4 { grid-template-columns: repeat(3, 1fr); }
+  .opt-grid--6 { grid-template-columns: repeat(4, 1fr); }
+  .size-row { grid-template-columns: repeat(2, 1fr); }
+  .topper-list { grid-template-columns: 1fr; }
+  .modal { border-radius: 18px; }
+  .modal__head, .modal__body { padding-left: 20px; padding-right: 20px; }
+  .modal-backdrop { padding: 12px; }
+  .drawer { border-left: 0; }
+  .intro { padding: 18px; }
+  .intro__cta { flex-direction: column; align-items: stretch; }
+  .intro__cta .btn { width: 100%; }
+  .intro__foot { font-size: 9px; letter-spacing: 0.16em; }
+  .toast-stack { top: 74px; }
+}
+
+/* ── landscape phones ───────────────────────────────────────
+   Stacking is the wrong answer here: an 844x390 phone has the width of
+   a small laptop and only 390px of height, so a stacked rail left the
+   studio a 156px letterbox. Beside the stage it keeps the full height. */
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 980px) {
+  .app { grid-template-columns: 1fr min(340px, 42vw); grid-template-rows: 1fr; }
+  .rail {
+    max-height: none;
+    border-left: 1px solid var(--line);
+    border-top: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .brand { display: block; padding: 12px 16px; }
+  .brand__sub { display: none; }
+  .stage-tools { top: 10px; left: auto; right: 12px; }
+  .toolbar { margin-left: 0; }
+  .stage-chips { bottom: 10px; }
+  /* back to the desktop flow inside the rail: the summary stacks under
+     the tab body again rather than sharing a row with it */
+  .summary { display: flex; flex-direction: column; padding: 12px 16px 13px; }
+  .summary__head { order: 1; }
+  .summary__toggle { margin-left: auto; margin-right: 10px; }
+  .summary__more { order: 2; margin-top: 10px; max-height: 132px; }
+  .summary__send { order: 3; margin-top: 10px; width: 100%; max-width: none; }
+  .summary__lines { max-height: 108px; }
+  /* The rail head is 154px — eyebrow, title and the editions strip — which
+     on a 390px rail left the tab body 36px, i.e. no shape cards at all.
+     The eyebrow ("COMMISSION") and the occasion strip are the two things
+     here that restate what the tab row and the studio already show. */
+  .rail__eyebrow { display: none; }
+  .editions {
+    margin-top: 6px;
+    padding-bottom: 4px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  /* Tighter and narrower, but the 40px tap floor holds — a 30px chip is
+     not something a thumb hits reliably, and the strip is a real entry
+     point into the design, not decoration. */
+  .edition-chip { padding: 4px 9px 4px 7px; font-size: 11px; gap: 5px; }
+  .edition-chip svg { width: 12px; height: 12px; }
+  .rail__head { padding: 10px 14px 0; }
+  .rail__title { font-size: 19px; }
+  .tabs { margin: 4px 12px 0; }
+  /* Back to the desktop flow inside the rail — total → breakdown → send —
+     rather than the phone's total | send row, which costs an extra
+     57px of headroom this rail does not have. */
+  .summary { display: flex; flex-direction: column; padding: 8px 14px 10px; }
+  .summary__head { order: 1; }
+  .summary__toggle { margin-left: auto; margin-right: 8px; }
+  .summary__more { order: 2; margin-top: 8px; max-height: 116px; }
+  .summary__send { order: 3; margin-top: 8px; width: 100%; max-width: none; padding: 10px 14px; }
+  .summary__lines { max-height: 96px; }
+  .summary__total { font-size: 22px; }
+  .rail__body { padding: 10px 14px 20px; }
+  .toast-stack { top: auto; bottom: 62px; }
+  /* Back to a horizontal row: the rail is now a full-height column beside
+     the studio, not a stacked sheet, so the tool column has the top-right
+     of the stage to itself again. */
+  .stage-tools {
+    flex-direction: column;
+    align-items: flex-end;
+    max-height: calc(100% - 130px);
+  }
+}
+
+/* ── keyframes ──────────────────────────────────────────────────── */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* `rise` for an element that is also centred with its own transform.
+   `animation-fill-mode: both` applies the `from` frame during the
+   delay, so the centring has to be inside the keyframes, not just on
+   the element. */
+@keyframes riseCentered {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes railIn {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(22px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sealPop {
+  0% { opacity: 0; transform: scale(0.5); }
+  60% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
