@@ -25,3 +25,6 @@ Thumbs.db
 
 # scratch: headless render captures from .smoke probes
 .smoke/*.png
+
+# wrangler local state
+.wrangler/

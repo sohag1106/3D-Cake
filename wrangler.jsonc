@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "atelier-creme",
+  "compatibility_date": "2026-10-06",
+
+  // The whole app is static — `npm run build` writes dist/ and that is all
+  // that ships. There is no Worker script.
+  "assets": {
+    "directory": "./dist",
+    // index.html is the only page; anything else is a typo or a stale link,
+    // so serve the app rather than Cloudflare's 404.
+    "not_found_handling": "single-page-application"
+  },
+
+  // Attaches the hostname to this Worker and provisions its DNS record and
+  // certificate. brightskyit.com is already in this account, and ruben/apex
+  // are untouched — only this subdomain is claimed.
+  "routes": [
+    { "pattern": "cake.brightskyit.com", "custom_domain": true }
+  ]
+}

@@ -40,6 +40,26 @@ src/
 .smoke/              headless Chrome checks driven over CDP
 ```
 
+## Deploying
+
+Live at **https://cake.brightskyit.com**, served by Cloudflare Workers static
+assets from the `atelier-creme` Worker.
+
+```bash
+npm run build
+npx wrangler deploy
+```
+
+`wrangler.jsonc` points at `./dist` and claims the `cake.brightskyit.com`
+custom domain, so a deploy publishes the build and provisions its DNS record
+and certificate. The hostname lives in the same Cloudflare account as
+`brightskyit.com` but is a separate Worker — deploying does not affect the
+apex site.
+
+`public/_headers` sets long-lived immutable caching on `/assets/*` (Vite
+fingerprints those filenames) and forces revalidation of `index.html`, which
+is what names the current fingerprint.
+
 ## Notes
 
 Frosting textures are painted to a canvas at load and cached per finish. The
